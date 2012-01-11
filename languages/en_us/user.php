@@ -31,6 +31,7 @@ $_LANG['label_collection'] = 'My Favorite';
 $_LANG['label_bonus'] = 'My Bonus';
 $_LANG['label_comment'] = 'My comment';
 $_LANG['label_affiliate'] = 'My recommendation';
+$_LANG['label_referral'] = 'My referral';
 $_LANG['label_group_buy'] = 'My Associates';
 $_LANG['label_booking'] = 'Booking Records';
 $_LANG['label_user_surplus'] = 'Account Details';
@@ -597,6 +598,13 @@ $_LANG['affiliate_num'] = 'Number';
 
 $_LANG['affiliate_view'] = 'View';
 $_LANG['affiliate_code'] = 'Code';
+
+$_LANG['referral_code'] = 'Referral';
+$_LANG['referral_email'] = 'Email';
+$_LANG['referral_date']  = 'Referral Date';
+$_LANG['referral_is_registered']         = 'Registered';
+$_LANG['referral_action_add']            = 'Add Referral';
+$_LANG['referral_action_delete_confirm'] = 'Are you sure to delete referral?';
 
 $_LANG['register_affiliate'] = 'Points for recommended memberID %s ( %s ) registration';
 $_LANG['register_points'] = 'Points for registeration';

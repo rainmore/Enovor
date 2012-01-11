@@ -31,6 +31,7 @@ $_LANG['label_collection'] = '我的收藏';
 $_LANG['label_bonus'] = '我的红包';
 $_LANG['label_comment'] = '我的评论';
 $_LANG['label_affiliate'] = '我的推荐';
+$_LANG['label_referral'] = '我的referral';
 $_LANG['label_group_buy'] = '我的团购';
 $_LANG['label_booking'] = '缺货登记';
 $_LANG['label_user_surplus'] = '资金管理';
@@ -597,6 +598,13 @@ $_LANG['affiliate_num'] = '人数';
 
 $_LANG['affiliate_view'] = '效果';
 $_LANG['affiliate_code'] = '代码';
+
+$_LANG['referral_code'] = 'Referral';
+$_LANG['referral_email'] = 'Email';
+$_LANG['referral_date']  = 'Referral Date';
+$_LANG['referral_is_registered']         = 'Registered';
+$_LANG['referral_action_add']            = 'Add Referral';
+$_LANG['referral_action_delete_confirm'] = 'Are you sure to delete referral?';
 
 $_LANG['register_affiliate'] = '推荐会员ID %s ( %s ) 注册送积分';
 $_LANG['register_points'] = '注册送积分';

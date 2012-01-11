@@ -874,4 +874,32 @@ function get_comment_list($user_id, $page_size, $start)
 
     return $comments;
 }
+
+/**
+ *  获取用户referral list
+ *
+ * @access  public
+ * @param   int     $user_id        用户id
+ * @param   int     $page_size      列表最大数量
+ * @param   int     $start          列表起始页
+ * @return  array
+ */
+function get_user_referral_list($user_id, $page_size, $start) 
+{
+	$sql = "SELECT r.*, ru.user_name ".
+			" FROM " . $GLOBALS['ecs']->table('user_referral') . " AS r ".
+			" LEFT JOIN " . $GLOBALS['ecs']->table('users') . " AS ru ON ru.user_id = r.registered_user_id".
+			" WHERE r.user_id='$user_id' ";
+
+	$res = $GLOBALS['db']->SelectLimit($sql, $page_size, $start);
+	$referral_lists = array();
+	while ($row = $GLOBALS['db']->fetchRow($res))
+	{
+		$row['formated_registered_date'] = local_date($GLOBALS['_CFG']['time_format'], $row['registered_date']);
+		$row['formated_created_date'] = local_date($GLOBALS['_CFG']['time_format'], $row['created_date']);
+		$referral_lists[] = $row;
+	}
+	
+	return $referral_lists;
+}
 ?>

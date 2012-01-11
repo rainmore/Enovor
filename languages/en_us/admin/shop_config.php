@@ -73,6 +73,7 @@ $_LANG['cfg_name']['can_invoice'] = 'Invoice';
 $_LANG['cfg_name']['user_notice'] = 'Member center notice';
 $_LANG['cfg_name']['shop_notice'] = 'Notice stores';
 $_LANG['cfg_name']['shop_reg_closed'] = 'Registration is closed';
+$_LANG['cfg_name']['shop_referral_closed'] = 'Referral is closed';
 $_LANG['cfg_name']['send_mail_on'] = 'Whether or not to open automatically send e-mail';
 $_LANG['cfg_name']['auto_generate_gallery'] = 'Merchandise is automatically upload album chart';
 $_LANG['cfg_name']['retain_original_img'] = 'Upload goods whether to retain image';
@@ -343,7 +344,8 @@ $_LANG['cfg_range']['show_attr_in_cart']['0'] = 'No';
 $_LANG['cfg_range']['show_attr_in_cart']['1'] = 'Yes';
 $_LANG['cfg_range']['shop_reg_closed']['0'] = 'No';
 $_LANG['cfg_range']['shop_reg_closed']['1'] = 'Yes';
-
+$_LANG['cfg_range']['shop_referral_closed']['0'] = 'No';
+$_LANG['cfg_range']['shop_referral_closed']['1'] = 'Yes';
 $_LANG['cfg_range']['timezone']['-12'] = '(GMT -12:00) Eniwetok, Kwajalein';
 $_LANG['cfg_range']['timezone']['-11'] = '(GMT -11:00) Midway Island, Samoa';
 $_LANG['cfg_range']['timezone']['-10'] = '(GMT -10:00) Hawaii';
