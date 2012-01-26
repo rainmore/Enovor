@@ -592,6 +592,62 @@ copyToClipboard = function(txt)
     <!-- {/if} -->
 
   <!-- /我的推荐 -->
+  
+  <!-- *我的referral -->
+    <!-- {if $referralConfig eq 1} -->
+      <!-- {if $action eq 'referral'} -->
+	      <h5><span>{$lang.referral_code}</span></h5>
+	      <div class="blank"></div>
+	      <!-- {if $allow_to_referral} -->
+	      <table width="100%" cellspacing="1" cellpadding="5" border="0" bgcolor="#dddddd">
+	      	<tr>
+	      		<td bgcolor="#ffffff" align="right">
+	      			<a href="user.php?act=referral_add">{$lang.referral_action_add}</a>
+	      		</td>
+	      	</tr>
+	      </table>
+	      <!-- {/if} -->
+	      <table width="100%" border="0" cellpadding="5" cellspacing="1" bgcolor="#dddddd">
+	      	<tr align="center">
+		      <td bgcolor="#ffffff">{$lang.referral_email}</td>
+		      <td bgcolor="#ffffff">{$lang.referral_date}</td>
+		      <td bgcolor="#ffffff">{$lang.referral_is_registered}</td>
+		      <td bgcolor="#ffffff"></td>
+		    </tr>
+		    <!-- {foreach from=$referral_list item=val name=referral} -->
+		    <tr align="center">
+		      <td bgcolor="#ffffff">{$val.referral_email}</td>
+		      <td bgcolor="#ffffff">{$val.formated_created_date}</td>
+		      <td bgcolor="#ffffff"><!-- {if $val.registered_user_id} -->{$lang.referral_is_registered}<!-- {/if} --></td>
+		      
+		      <td bgcolor="#ffffff"><!-- {if !$val.registered_user_id} --><a href="user.php?act=act_referral_cancel&id={$val.id}&page={$page}" onclick="if (!confirm('{$lang.referral_action_delete_confirm}')) return false;">{$lang.is_cancel}</a><!-- {/if} --></td>
+		    </tr>
+		    <!-- {/foreach} -->
+	      </table>
+  	  <!-- {/if} -->
+  	  <!-- {if $action eq 'referral_add'} -->
+  	  	<h5><span>{$lang.referral_code}</span></h5>
+	    <div class="blank"></div>
+	    <form action="user.php" method="post" name="formReferral" onsubmit="return addReferral();">
+	     <table width="100%" border="0" cellpadding="5" cellspacing="1" bgcolor="#dddddd">
+	      <tr>
+	        <td align="right" bgcolor="#ffffff">{$lang.referral_email}</td>
+	        <td bgcolor="#ffffff"><input name="referral_email" type="text" value="{$info.referral_email|escape}" class="inputBg" /></td>
+	      </tr>
+	      <tr>
+	        <td align="right" bgcolor="#ffffff">&nbsp;</td>
+	        <td bgcolor="#ffffff"><input name="act" type="hidden" value="act_add_booking" />
+	          <input type="hidden" name="act" value="act_referral_add" />
+	          <input type="submit" name="submit" class="submit" value="{$lang.referral_submit}" />
+	          <input type="reset" name="reset" class="reset" value="{$lang.button_reset}" />
+	        </td>
+	      </tr>
+	    </table>
+	     </form>
+  	  <!-- {/if} -->
+    <!-- {/if} -->
+  <!-- /我的referral -->
+  
       </div>
      </div>
     </div>

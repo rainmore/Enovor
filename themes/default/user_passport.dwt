@@ -202,6 +202,127 @@
 <!--{/if}-->
 <!--#会员注册界面 end-->
 
+<!--*Referral会员注册界面 start-->
+    <!--{if $action eq 'referral'}-->
+    <!-- {if $shop_referral_closed eq 1} -->
+    <div class="usBox">
+      <div class="usBox_2 clearfix">
+        <div class="f1 f5" align="center">{$lang.shop_referral_closed}</div>
+      </div>
+    </div>
+    <!-- {else} -->
+    {insert_scripts files='utils.js'}
+<div class="usBox">
+  <div class="usBox_2 clearfix">
+   <div class="regtitle"></div>
+    <form action="user.php" method="post" name="formUser" onsubmit="return register();">
+      <input name="referral_code" type="hidden" id="referral_code" />
+      <table width="100%"  border="0" align="left" cellpadding="5" cellspacing="3">
+        <tr>
+          <td width="13%" align="right">{$lang.label_username}</td>
+          <td width="87%">
+          <input name="username" type="text" size="25" id="username" onblur="is_registered(this.value);" class="inputBg"/>
+            <span id="username_notice" style="color:#FF0000"> *</span>
+          </td>
+        </tr>
+        <tr>
+          <td align="right">{$lang.label_email}</td>
+          <td>
+          <input name="email" type="text" size="25" id="email" onblur="checkEmail(this.value);"  class="inputBg"/>
+            <span id="email_notice" style="color:#FF0000"> *</span>
+          </td>
+        </tr>
+        <tr>
+          <td align="right">{$lang.label_password}</td>
+          <td>
+          <input name="password" type="password" id="password1" onblur="check_password(this.value);" onkeyup="checkIntensity(this.value)" class="inputBg" style="width:179px;" />
+            <span style="color:#FF0000" id="password_notice"> *</span>
+          </td>
+        </tr>
+        <tr>
+          <td align="right">{$lang.label_password_intensity}</td>
+          <td>
+            <table width="145" border="0" cellspacing="0" cellpadding="1">
+              <tr align="center">
+                <td width="33%" id="pwd_lower">{$lang.pwd_lower}</td>
+                <td width="33%" id="pwd_middle">{$lang.pwd_middle}</td>
+                <td width="33%" id="pwd_high">{$lang.pwd_high}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td align="right">{$lang.label_confirm_password}</td>
+          <td>
+          <input name="confirm_password" type="password" id="conform_password" onblur="check_conform_password(this.value);"  class="inputBg" style="width:179px;"/>
+            <span style="color:#FF0000" id="conform_password_notice"> *</span>
+          </td>
+        </tr>
+        <!-- {foreach from=$extend_info_list item=field} -->
+	<!-- {if $field.id eq 6} -->
+        <tr>
+          <td align="right">{$lang.passwd_question}</td>
+          <td>
+          <select name='sel_question'>
+	  <option value='0'>{$lang.sel_question}</option>
+	  {html_options options=$passwd_questions}
+	  </select>
+          </td>
+        </tr>
+        <tr>
+          <td align="right" <!-- {if $field.is_need} -->id="passwd_quesetion"<!--{/if}-->>{$lang.passwd_answer}</td>
+          <td>
+	  <input name="passwd_answer" type="text" size="25" class="inputBg" maxlengt='20'/><!-- {if $field.is_need} --><span style="color:#FF0000"> *</span><!-- {/if} -->
+          </td>
+        </tr>
+	<!-- {else} -->
+        <tr>
+          <td align="right" <!-- {if $field.is_need} -->id="extend_field{$field.id}i"<!--{/if}-->>{$field.reg_field_name}
+          <td>
+          <input name="extend_field{$field.id}" type="text" size="25" class="inputBg" /><!-- {if $field.is_need} --><span style="color:#FF0000"> *</span><!-- {/if} -->
+          </td>
+        </tr>
+	<!-- {/if} -->
+	<!-- {/foreach} -->
+      <!-- 判断是否启用验证码{if $enabled_captcha} -->
+      <tr>
+      <td align="right">{$lang.comment_captcha}</td>
+      <td><input type="text" size="8" name="captcha" class="inputBg" />
+      <img src="captcha.php?{$rand}" alt="captcha" style="vertical-align: middle;cursor: pointer;" onClick="this.src='captcha.php?'+Math.random()" /> </td>
+      </tr>
+      <!--{/if}-->
+        <tr>
+          <td>&nbsp;</td>
+          <td><label>
+            <input name="agreement" type="checkbox" value="1" checked="checked" />
+            {$lang.agreement}</label></td>
+        </tr>
+        <tr>
+          <td>&nbsp;</td>
+          <td align="left">
+          <input name="act" type="hidden" value="act_register" >
+          <input type="hidden" name="back_act" value="{$back_act}" />
+          <input name="Submit" type="submit" value="" class="us_Submit_reg">
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">&nbsp;</td>
+        </tr>
+        <tr>
+          <td>&nbsp;</td>
+          <td class="actionSub">
+          <a href="user.php?act=login">{$lang.want_login}</a><br />
+          <a href="user.php?act=get_password">{$lang.forgot_password}</a>
+          </td>
+        </tr>
+      </table>
+    </form>
+  </div>
+</div>
+<!--{/if}-->
+<!--{/if}-->
+<!--#Referral会员注册界面 end-->
+
 <!--*找回密码界面 -->
     <!--{if $action eq 'get_password'} -->
     {insert_scripts files='utils.js'}

@@ -10,6 +10,7 @@
 <a href="user.php?act=booking_list"{if $action eq 'booking_list'}class="curs"{/if}><img src="../images/u8.gif"> {$lang.label_booking}</a>
 <a href="user.php?act=bonus"{if $action eq 'bonus'}class="curs"{/if}><img src="../images/u9.gif"> {$lang.label_bonus}</a>
 <!-- {if $affiliate.on eq 1} --><a href="user.php?act=affiliate"{if $action eq 'affiliate'}class="curs"{/if}><img src="../images/u10.gif"> {$lang.label_affiliate}</a><!-- {/if} -->
+<!-- {if $referralConfig eq 1} --><a href="user.php?act=referral"{if $action eq 'referral'}class="curs"{/if}><img src="../images/u10.gif"> {$lang.label_referral}</a><!-- {/if} -->
 <a href="user.php?act=comment_list"{if $action eq 'comment_list'}class="curs"{/if}><img src="../images/u11.gif"> {$lang.label_comment}</a>
 <!--<a href="user.php?act=group_buy">{$lang.label_group_buy}</a>-->
 <a href="user.php?act=track_packages"{if $action eq 'track_packages'}class="curs"{/if}><img src="../images/u12.gif"> {$lang.label_track_packages}</a>
