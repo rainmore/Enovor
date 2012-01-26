@@ -889,7 +889,7 @@ function get_user_referral_list($user_id, $page_size, $start)
 	$sql = "SELECT r.*, ru.user_name ".
 			" FROM " . $GLOBALS['ecs']->table('user_referral') . " AS r ".
 			" LEFT JOIN " . $GLOBALS['ecs']->table('users') . " AS ru ON ru.user_id = r.registered_user_id".
-			" WHERE r.user_id='$user_id' ";
+			" WHERE r.is_active=1 AND r.user_id='$user_id' ";
 
 	$res = $GLOBALS['db']->SelectLimit($sql, $page_size, $start);
 	$referral_lists = array();

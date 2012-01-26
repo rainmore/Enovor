@@ -605,6 +605,11 @@ $_LANG['referral_date']  = 'Referral Date';
 $_LANG['referral_is_registered']         = 'Registered';
 $_LANG['referral_action_add']            = 'Add Referral';
 $_LANG['referral_action_delete_confirm'] = 'Are you sure to delete referral?';
+$_LANG['referral_delete_success']        = 'Referral has been cancelled';
+$_LANG['referral_delete_fail']           = 'Referral can\'t be cancelled';
+$_LANG['referral_add_success']           = 'Thanks for the referral';
+$_LANG['referral_add_fail']              = 'Referral can\'t be added';
+$_LANG['referral_submit']                = 'Referral';
 
 $_LANG['register_affiliate'] = 'Points for recommended memberID %s ( %s ) registration';
 $_LANG['register_points'] = 'Points for registeration';
