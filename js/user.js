@@ -864,3 +864,31 @@ function calResult()
     }
   }
 }
+
+function addReferral() 
+{
+    var frm = document.forms['formReferral'];
+    var email = frm.elements['referral_email'].value;  
+    var msg = '';
+
+    if (email.length == 0) {
+        msg += email_empty + '\n';
+    }
+    else
+    {
+        if ( ! (Utils.isEmail(email)))
+        {
+            msg += email_error + '\n';
+        }
+    }
+    
+    if (msg.length > 0)
+    {
+        alert(msg);
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
