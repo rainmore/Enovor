@@ -610,6 +610,7 @@ $_LANG['referral_delete_fail']           = 'Referral can\'t be cancelled';
 $_LANG['referral_add_success']           = 'Thanks for the referral';
 $_LANG['referral_add_fail']              = 'Referral can\'t be added';
 $_LANG['referral_submit']                = 'Referral';
+$_LANG['referral_register_invalid_hash'] = 'Invalid Hash';
 
 $_LANG['register_affiliate'] = 'Points for recommended memberID %s ( %s ) registration';
 $_LANG['register_points'] = 'Points for registeration';

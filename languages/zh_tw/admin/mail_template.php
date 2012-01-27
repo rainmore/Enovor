@@ -34,6 +34,7 @@ $_LANG['remind_of_new_order'] = '新訂單提醒模板';
 $_LANG['goods_booking'] = '缺貨回復模板';
 $_LANG['user_message'] = '留言回復模板';
 $_LANG['recomment'] = '用戶評論回復模板';
+$_LANG['referral_email_confirm'] = '確認Referral郵件模板';
 
 $_LANG['subject_empty'] = '對不起，郵件的主題不能為空。';
 $_LANG['content_empty'] = '對不起，郵件的內容不能為空。';

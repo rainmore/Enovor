@@ -30,14 +30,15 @@ $smarty->assign('referralConfig', $referralConfig);
 $affiliate = unserialize($GLOBALS['_CFG']['affiliate']);
 $smarty->assign('affiliate', $affiliate);
 
+
 // 不需要登录的操作或自己验证是否登录（如ajax处理）的act
 $not_login_arr =
-array('login','act_login','register','act_register','act_edit_password','get_password','send_pwd_email','password', 'signin', 'add_tag', 'collect', 'return_to_cart', 'logout', 'email_list', 'validate_email', 'send_hash_mail', 'order_query', 'is_registered', 'check_email','clear_history','qpassword_name', 'get_passwd_question', 'check_answer');
+array('login','act_login','register','act_register','act_edit_password','get_password','send_pwd_email','password', 'signin', 'add_tag', 'collect', 'return_to_cart', 'logout', 'email_list', 'validate_email', 'send_hash_mail', 'order_query', 'is_registered', 'check_email','clear_history','qpassword_name', 'get_passwd_question', 'check_answer', 'register_referral', 'act_register_referral');
 
 /* 显示页面的action列表 */
 $ui_arr = array('register', 'login', 'profile', 'order_list', 'order_detail', 'address_list', 'collection_list',
 'message_list', 'tag_list', 'get_password', 'reset_password', 'booking_list', 'add_booking', 'account_raply',
-'account_deposit', 'account_log', 'account_detail', 'act_account', 'pay', 'default', 'bonus', 'group_buy', 'group_buy_detail', 'affiliate', 'referral', 'referral_add', 'comment_list','validate_email','track_packages', 'transform_points','qpassword_name', 'get_passwd_question', 'check_answer');
+'account_deposit', 'account_log', 'account_detail', 'act_account', 'pay', 'default', 'bonus', 'group_buy', 'group_buy_detail', 'affiliate', 'referral', 'referral_add', 'comment_list','validate_email','track_packages', 'transform_points','qpassword_name', 'get_passwd_question', 'check_answer', 'register_referral');
 
 /* 未登录处理 */
 if (empty($_SESSION['user_id']))
@@ -2751,23 +2752,23 @@ elseif ($action == 'clear_history')
 /* Referral */
 elseif ($action == 'referral') {
 	include_once(ROOT_PATH .'includes/lib_clips.php');
-	
+
 	$page = isset($_REQUEST['page']) ? intval($_REQUEST['page']) : 1;
 	$url_format = "user.php?act=referral&page=";
-	
+
 	$record_count = $db->getOne("SELECT COUNT(*) FROM " . $ecs->table('user_referral') . " WHERE user_id = '$user_id' AND is_active = 1");
 	$record_count_no_registered = $db->getOne("SELECT COUNT(*) FROM " .$ecs->table('user_referral'). " WHERE user_id = '$user_id' AND is_active = 1 AND registered_user_id IS NULL");
     $pager  = get_pager('user.php', array('act' => $action), $record_count, $page);
-    
+
     $referral_list = get_user_referral_list($user_id, $pager['size'], $pager['start']);
- 
+
 	$smarty->assign('url_format',        $url_format);
 	$smarty->assign('referral_list',     $referral_list);
 	$smarty->assign('allow_to_referral', ($record_count_no_registered == 0 ? true : false) );
 	$smarty->assign('pager',             $pager);
 	$smarty->assign('page',              $page);
 	$smarty->display('user_clips.dwt');
-	
+
 }
 elseif ($action == 'referral_add') {
 	include_once(ROOT_PATH .'includes/lib_clips.php');
@@ -2792,30 +2793,194 @@ elseif ($action == 'referral_add') {
 elseif ($action == 'act_referral_add') {
 	/* 增加是否关闭Referral */
 	$page = isset($_REQUEST['page']) ? intval($_REQUEST['page']) : 1;
+    $id = isset($_REQUEST['id']) ? intval($_REQUEST['id']) : null;
+    $email = $_POST['referral_email'];
 
-	$data = $db->getOne("SELECT COUNT(*) FROM " . $ecs->table('user_referral') . " WHERE user_id = '$user_id' AND is_active = 1 AND id = " . $id);
-	if ($_CFG['shop_referral_closed'] || !$id || !$data)
+    $data = $db->getOne("SELECT COUNT(*) FROM " . $ecs->table('user_referral') . " WHERE user_id = '$user_id' AND is_active = 1");
+    if (!is_email($email))
+    {
+        show_message($_LANG['msg_email_format'], $_LANG['referral_add_fail'], 'user.php?act=referral&page=' . $page);
+    } elseif ($_CFG['shop_referral_closed'] || $id || $data)
 	{
-		show_message($_LANG['exchange_error_1'], $_LANG['referral_add_fail'], 'user.php?act=referral&page=' . $page);
+		show_message($_LANG['referral_add_fail'], $_LANG['referral_add_fail'], 'user.php?act=referral&page=' . $page);
 	} else {
-
-		$db->query("UPDATE " . $ecs->table('user_referral') . " SET is_active = 0 WHERE id = " . $id);
-		show_message($_LANG['referral_add_success'], $_LANG['referral_add_success'], 'user.php?act=referral&page=' . $page);
+		$db->query("INSERT INTO " . $ecs->table('user_referral') . " SET referral_email = '" . mysql_real_escape_string($_POST['referral_email']) . "', user_id = '" . $user_id . "', created_date = '" . time() . "'");
+        $referral_id = mysql_insert_id();
+        include_once(ROOT_PATH .'includes/lib_passport.php');
+        if(send_referral_email($referral_id)) {
+            show_message($_LANG['referral_add_success'], $_LANG['referral_add_success'], 'user.php?act=referral&page=' . $page);
+        } else {
+            $db->query("UPDATE " . $ecs->table('user_referral') . " SET is_active = 0 WHERE id = " . $referral_id);
+            show_message($_LANG['referral_add_fail'], $_LANG['referral_add_fail'], 'user.php?act=referral&page=' . $page);
+        }
 	}
 }
 elseif ($action == 'act_referral_cancel') {
 	/* 增加是否关闭Referral */
 	$id   = isset($_REQUEST['id']) ? intval($_REQUEST['id']) : null;
 	$page = isset($_REQUEST['page']) ? intval($_REQUEST['page']) : 1;
-	
+
 	$data = $db->getOne("SELECT COUNT(*) FROM " . $ecs->table('user_referral') . " WHERE user_id = '$user_id' AND is_active = 1 AND id = " . $id);
 	if ($_CFG['shop_referral_closed'] || !$id || !$data)
 	{
 		show_message($_LANG['exchange_error_1'], $_LANG['referral_delete_fail'], 'user.php?act=referral&page=' . $page);
 	} else {
-		
+
 		$db->query("UPDATE " . $ecs->table('user_referral') . " SET is_active = 0 WHERE id = " . $id);
 		show_message($_LANG['referral_delete_success'], $_LANG['referral_delete_success'], 'user.php?act=referral&page=' . $page);
 	}
+} elseif ($action == 'register_referral') {
+    if (!isset($back_act) && isset($GLOBALS['_SERVER']['HTTP_REFERER']))
+    {
+        $back_act = strpos($GLOBALS['_SERVER']['HTTP_REFERER'], 'user.php') ? './index.php' : $GLOBALS['_SERVER']['HTTP_REFERER'];
+    }
+
+    $hash = empty($_GET['hash']) ? '' : trim($_GET['hash']);
+    include_once(ROOT_PATH . 'includes/lib_passport.php');
+    $id = register_hash('decode', $hash);
+    $sql = "SELECT referral_email, user_id, registered_date, registered_user_id FROM " . $ecs->table('user_referral') . " WHERE is_active = 1 AND id = '" . mysql_real_escape_string($id) . "'";
+    $referral = $db->getRow($sql);
+
+    if (!$hash || !$id || !$referral) {
+         show_message($_LANG['referral_register_invalid_hash']);
+    }
+
+    /* 取出注册扩展字段 */
+    $sql = 'SELECT * FROM ' . $ecs->table('reg_fields') . ' WHERE type < 2 AND display = 1 ORDER BY dis_order, id';
+    $extend_info_list = $db->getAll($sql);
+    $smarty->assign('extend_info_list', $extend_info_list);
+
+    /* 验证码相关设置 */
+    if ((intval($_CFG['captcha']) & CAPTCHA_REGISTER) && gd_version() > 0)
+    {
+        $smarty->assign('enabled_captcha', 1);
+        $smarty->assign('rand',            mt_rand());
+    }
+
+    /* 密码提示问题 */
+    $smarty->assign('passwd_questions', $_LANG['passwd_questions']);
+
+    /* 增加是否关闭注册 */
+    $smarty->assign('email', $referral['referral_email']);
+    $smarty->assign('hash', $hash);
+    $smarty->assign('shop_reg_closed', !$_CFG['shop_reg_closed'] && $_CFG['shop_referral_closed']);
+    $smarty->assign('shop_referral_closed', $_CFG['shop_referral_closed']);
+    $smarty->assign('back_act', $back_act);
+    $smarty->display('user_passport.dwt');
 }
+/* referral注册会员的处理 */
+elseif ($action == 'act_register_referral')
+{
+    $hash  = isset($_REQUEST['hash']) ? trim($_REQUEST['hash']) : false;
+    /* 增加是否关闭注册 */
+    if ($_CFG['shop_referral_closed'])
+    {
+        $smarty->assign('action',     'register_referral');
+        $smarty->assign('shop_reg_closed', !$_CFG['shop_reg_closed'] && $_CFG['shop_referral_closed']);
+        $smarty->assign('shop_referral_closed', $_CFG['shop_referral_closed']);
+        $smarty->display('user_passport.dwt');
+    } else if (!$hash) {
+        show_message($_LANG['referral_register_invalid_hash']);
+    } else {
+        include_once(ROOT_PATH . 'includes/lib_passport.php');
+        $referral_id = register_hash('decode', $hash);
+        $sql = "SELECT referral_email, user_id, registered_date, registered_user_id FROM " . $ecs->table('user_referral') . " WHERE is_active = 1 AND id = '" . mysql_real_escape_string($referral_id) . "'";
+        $referral = $db->getRow($sql);
+
+        $username = isset($_POST['username']) ? trim($_POST['username']) : '';
+        $password = isset($_POST['password']) ? trim($_POST['password']) : '';
+        $email    = isset($_POST['email']) ? trim($_POST['email']) : $referral['referral_email'];
+        $other['msn'] = isset($_POST['extend_field1']) ? $_POST['extend_field1'] : '';
+        $other['qq'] = isset($_POST['extend_field2']) ? $_POST['extend_field2'] : '';
+        $other['office_phone'] = isset($_POST['extend_field3']) ? $_POST['extend_field3'] : '';
+        $other['home_phone'] = isset($_POST['extend_field4']) ? $_POST['extend_field4'] : '';
+        $other['mobile_phone'] = isset($_POST['extend_field5']) ? $_POST['extend_field5'] : '';
+        $sel_question = empty($_POST['sel_question']) ? '' : $_POST['sel_question'];
+        $passwd_answer = isset($_POST['passwd_answer']) ? trim($_POST['passwd_answer']) : '';
+
+        $back_act = isset($_POST['back_act']) ? trim($_POST['back_act']) : '';
+
+
+        if(empty($_POST['agreement']))
+        {
+            show_message($_LANG['passport_js']['agreement']);
+        }
+        if (strlen($username) < 3)
+        {
+            show_message($_LANG['passport_js']['username_shorter']);
+        }
+
+        if (strlen($password) < 6)
+        {
+            show_message($_LANG['passport_js']['password_shorter']);
+        }
+
+        if (strpos($password, ' ') > 0)
+        {
+            show_message($_LANG['passwd_balnk']);
+        }
+
+        /* 验证码检查 */
+        if ((intval($_CFG['captcha']) & CAPTCHA_REGISTER) && gd_version() > 0)
+        {
+            if (empty($_POST['captcha']))
+            {
+                show_message($_LANG['invalid_captcha'], $_LANG['sign_up'], 'user.php?act=register', 'error');
+            }
+
+            /* 检查验证码 */
+            include_once('includes/cls_captcha.php');
+
+            $validator = new captcha();
+            if (!$validator->check_word($_POST['captcha']))
+            {
+                show_message($_LANG['invalid_captcha'], $_LANG['sign_up'], 'user.php?act=register', 'error');
+            }
+        }
+
+        if (register_referral($username, $password, $email, $referral['user_id'], $other) !== false)
+        {
+            /*把新注册用户的扩展信息插入数据库*/
+            $sql = 'SELECT id FROM ' . $ecs->table('reg_fields') . ' WHERE type = 0 AND display = 1 ORDER BY dis_order, id';   //读出所有自定义扩展字段的id
+            $fields_arr = $db->getAll($sql);
+
+            $extend_field_str = '';    //生成扩展字段的内容字符串
+            foreach ($fields_arr AS $val)
+            {
+                $extend_field_index = 'extend_field' . $val['id'];
+                if(!empty($_POST[$extend_field_index]))
+                {
+                    $temp_field_content = strlen($_POST[$extend_field_index]) > 100 ? mb_substr($_POST[$extend_field_index], 0, 99) : $_POST[$extend_field_index];
+                    $extend_field_str .= " ('" . $_SESSION['user_id'] . "', '" . $val['id'] . "', '" . $temp_field_content . "'),";
+                }
+            }
+            $extend_field_str = substr($extend_field_str, 0, -1);
+
+            if ($extend_field_str)      //插入注册扩展数据
+            {
+                $sql = 'INSERT INTO '. $ecs->table('reg_extend_info') . ' (`user_id`, `reg_field_id`, `content`) VALUES' . $extend_field_str;
+                $db->query($sql);
+            }
+
+            /* 写入密码提示问题和答案 */
+            if (!empty($passwd_answer) && !empty($sel_question))
+            {
+                $sql = 'UPDATE ' . $ecs->table('users') . " SET `passwd_question`='$sel_question', `passwd_answer`='$passwd_answer'  WHERE `user_id`='" . $_SESSION['user_id'] . "'";
+                $db->query($sql);
+            }
+
+            $ucdata = empty($user->ucdata)? "" : $user->ucdata;
+
+            $sql = "UPDATE " . $ecs->table('user_referral') . " SET registered_user_id = '" . $_SESSION['user_id'] . "', registered_date = '" . time() . "' WHERE id= " . $referral_id;
+            $db->query($sql);
+
+            show_message(sprintf($_LANG['register_success'], $username . $ucdata), array($_LANG['back_up_page'], $_LANG['profile_lnk']), array($back_act, 'user.php'), 'info');
+        }
+        else
+        {
+            $err->show($_LANG['sign_up'], 'user.php?act=register_referral&hash=' . $hash);
+        }
+    }
+}
+
 ?>

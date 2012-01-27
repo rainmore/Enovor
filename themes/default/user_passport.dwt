@@ -83,7 +83,7 @@
 <!--#登录界面 end-->
 
 <!--*会员注册界面 start-->
-    <!--{if $action eq 'register'}-->
+    <!--{if $action eq 'register' or $action eq 'register_referral'}-->
     <!-- {if $shop_reg_closed eq 1} -->
     <div class="usBox">
       <div class="usBox_2 clearfix">
@@ -107,7 +107,7 @@
         <tr>
           <td align="right">{$lang.label_email}</td>
           <td>
-          <input name="email" type="text" size="25" id="email" onblur="checkEmail(this.value);"  class="inputBg"/>
+          <input name="email" type="text" size="25" id="email" onblur="checkEmail(this.value);"  class="inputBg" value="{$email}"/>
             <span id="email_notice" style="color:#FF0000"> *</span>
           </td>
         </tr>
@@ -179,7 +179,14 @@
         <tr>
           <td>&nbsp;</td>
           <td align="left">
+          <!--{if $action eq 'register_referral'}-->
+            <input name="act" type="hidden" value="act_register_referral" >
+            <!--{if $hash}-->
+            <input type="hidden" name="hash" value="{$hash}" />
+            <!--{/if}-->
+          <!--{else}-->
           <input name="act" type="hidden" value="act_register" >
+          <!--{/if}-->
           <input type="hidden" name="back_act" value="{$back_act}" />
           <input name="Submit" type="submit" value="" class="us_Submit_reg">
           </td>

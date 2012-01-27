@@ -13,3 +13,12 @@ create table ecs_user_referral (
     index idx_ecs_user_referral_referral_email (referral_email)
 );
 
+insert into ecs_mail_templates (template_code, is_html, template_subject, template_content,last_modify, last_send, `type`) values
+('referral_email_confirm', 0, 'Referral Confirm Email', '您好！<br><br>
+
+您的朋友{user_name}推荐您成为{$shop_name}的会员<br />
+请点击以下链接(或者复制到您的浏览器)来进行注册<br />
+<a href="{$referral_comfirm_url}" target="_blank">{$referral_comfirm_url}</a><br><br>
+
+{$shop_name}<br />
+{$send_date}', unix_timestamp(), 1, 'template');

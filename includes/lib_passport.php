@@ -401,4 +401,211 @@ function admin_registered( $adminname )
     return $res;
 }
 
+/**
+ * Send referral email
+ * @param   string      $referral_id referral record id
+ * @return  boolean
+ */
+function send_referral_email($referral_id)
+{
+    $sql = "SELECT referral_email, user_id FROM " . $GLOBALS['ecs']->table('user_referral') . " WHERE id = '$referral_id'";
+    $referral = $GLOBALS['db']->getRow($sql);
+
+    $sql = "SELECT user_name, email FROM " . $GLOBALS['ecs']->table('users') . " WHERE user_id = '" . $referral['user_id'] . "'";
+    $row = $GLOBALS['db']->getRow($sql);
+
+    $email = $referral['referral_email'];
+    $referral_id = 1;
+
+    $hash = register_hash('encode', $referral_id);
+    $referral_comfirm_url = $GLOBALS['ecs']->url() . 'user.php?act=register_referral&hash=' . $hash;
+
+
+    $name = '';
+    $template    = get_mail_template('referral_email_confirm');
+    $subject = $template['template_subject'];
+    $type = $template['is_html'];
+
+    $GLOBALS['smarty']->assign('user_name',            $row['email']);
+    $GLOBALS['smarty']->assign('referral_comfirm_url', $referral_comfirm_url);
+    $GLOBALS['smarty']->assign('shop_name',            $GLOBALS['_CFG']['shop_name']);
+    $GLOBALS['smarty']->assign('send_date',            date($GLOBALS['_CFG']['date_format']));
+
+    $content = $GLOBALS['smarty']->fetch('str:' . $template['template_content']);
+
+    if(send_mail($name, $email, $subject, $content, $type))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+/**
+ * 用户注册，登录函数
+ *
+ * @access  public
+ * @param   string       $username          注册用户名
+ * @param   string       $password          用户密码
+ * @param   string       $email             注册email
+ * @param   array        $other             注册的其他信息
+ *
+ * @return  bool         $bool
+ */
+function register_referral($username, $password, $email, $up_uid, $other = array())
+{
+    /* 检查注册是否关闭 */
+    if (!empty($GLOBALS['_CFG']['shop_referral_closed']))
+    {
+        $GLOBALS['err']->add($GLOBALS['_LANG']['shop_referral_closed']);
+    }
+    /* 检查username */
+    if (empty($username))
+    {
+        $GLOBALS['err']->add($GLOBALS['_LANG']['username_empty']);
+    }
+    else
+    {
+        if (preg_match('/\'\/^\\s*$|^c:\\\\con\\\\con$|[%,\\*\\"\\s\\t\\<\\>\\&\'\\\\]/', $username))
+        {
+            $GLOBALS['err']->add(sprintf($GLOBALS['_LANG']['username_invalid'], htmlspecialchars($username)));
+        }
+    }
+
+    /* 检查email */
+    if (empty($email))
+    {
+        $GLOBALS['err']->add($GLOBALS['_LANG']['email_empty']);
+    }
+    else
+    {
+        if (!is_email($email))
+        {
+            $GLOBALS['err']->add(sprintf($GLOBALS['_LANG']['email_invalid'], htmlspecialchars($email)));
+        }
+    }
+
+    if ($GLOBALS['err']->error_no > 0)
+    {
+        return false;
+    }
+
+    /* 检查是否和管理员重名 */
+    if (admin_registered($username))
+    {
+        $GLOBALS['err']->add(sprintf($GLOBALS['_LANG']['username_exist'], $username));
+        return false;
+    }
+
+    if (!$GLOBALS['user']->add_user($username, $password, $email))
+    {
+        if ($GLOBALS['user']->error == ERR_INVALID_USERNAME)
+        {
+            $GLOBALS['err']->add(sprintf($GLOBALS['_LANG']['username_invalid'], $username));
+        }
+        elseif ($GLOBALS['user']->error == ERR_USERNAME_NOT_ALLOW)
+        {
+            $GLOBALS['err']->add(sprintf($GLOBALS['_LANG']['username_not_allow'], $username));
+        }
+        elseif ($GLOBALS['user']->error == ERR_USERNAME_EXISTS)
+        {
+            $GLOBALS['err']->add(sprintf($GLOBALS['_LANG']['username_exist'], $username));
+        }
+        elseif ($GLOBALS['user']->error == ERR_INVALID_EMAIL)
+        {
+            $GLOBALS['err']->add(sprintf($GLOBALS['_LANG']['email_invalid'], $email));
+        }
+        elseif ($GLOBALS['user']->error == ERR_EMAIL_NOT_ALLOW)
+        {
+            $GLOBALS['err']->add(sprintf($GLOBALS['_LANG']['email_not_allow'], $email));
+        }
+        elseif ($GLOBALS['user']->error == ERR_EMAIL_EXISTS)
+        {
+            $GLOBALS['err']->add(sprintf($GLOBALS['_LANG']['email_exist'], $email));
+        }
+        else
+        {
+            $GLOBALS['err']->add('UNKNOWN ERROR!');
+        }
+
+        //注册失败
+        return false;
+    }
+    else
+    {
+        //注册成功
+
+        /* 设置成登录状态 */
+        $GLOBALS['user']->set_session($username);
+        $GLOBALS['user']->set_cookie($username);
+
+        /* 注册送积分 */
+        if (!empty($GLOBALS['_CFG']['register_points']))
+        {
+            log_account_change($_SESSION['user_id'], 0, 0, $GLOBALS['_CFG']['register_points'], $GLOBALS['_CFG']['register_points'], $GLOBALS['_LANG']['register_points']);
+        }
+
+        /*推荐处理*/
+        $affiliate  = unserialize($GLOBALS['_CFG']['affiliate']);
+        if (isset($affiliate['on']) && $affiliate['on'] == 1)
+        {
+            // 推荐开关开启
+            empty($affiliate) && $affiliate = array();
+            $affiliate['config']['level_register_all'] = intval($affiliate['config']['level_register_all']);
+            $affiliate['config']['level_register_up'] = intval($affiliate['config']['level_register_up']);
+            if ($up_uid)
+            {
+                if (!empty($affiliate['config']['level_register_all']))
+                {
+                    if (!empty($affiliate['config']['level_register_up']))
+                    {
+                        $rank_points = $GLOBALS['db']->getOne("SELECT rank_points FROM " . $GLOBALS['ecs']->table('users') . " WHERE user_id = '$up_uid'");
+                        if ($rank_points + $affiliate['config']['level_register_all'] <= $affiliate['config']['level_register_up'])
+                        {
+                            log_account_change($up_uid, 0, 0, $affiliate['config']['level_register_all'], 0, sprintf($GLOBALS['_LANG']['register_affiliate'], $_SESSION['user_id'], $username));
+                        }
+                    }
+                    else
+                    {
+                        log_account_change($up_uid, 0, 0, $affiliate['config']['level_register_all'], 0, $GLOBALS['_LANG']['register_affiliate']);
+                    }
+                }
+
+                //设置推荐人
+                $sql = 'UPDATE '. $GLOBALS['ecs']->table('users') . ' SET parent_id = ' . $up_uid . ' WHERE user_id = ' . $_SESSION['user_id'];
+
+                $GLOBALS['db']->query($sql);
+            }
+        }
+
+        //定义other合法的变量数组
+        $other_key_array = array('msn', 'qq', 'office_phone', 'home_phone', 'mobile_phone');
+        $update_data['reg_time'] = local_strtotime(local_date('Y-m-d H:i:s'));
+        if ($other)
+        {
+            foreach ($other as $key=>$val)
+            {
+                //删除非法key值
+                if (!in_array($key, $other_key_array))
+                {
+                    unset($other[$key]);
+                }
+                else
+                {
+                    $other[$key] =  htmlspecialchars(trim($val)); //防止用户输入javascript代码
+                }
+            }
+            $update_data = array_merge($update_data, $other);
+        }
+        $GLOBALS['db']->autoExecute($GLOBALS['ecs']->table('users'), $update_data, 'UPDATE', 'user_id = ' . $_SESSION['user_id']);
+
+        update_user_info();      // 更新用户信息
+        recalculate_price();     // 重新计算购物车中的商品价格
+
+        return true;
+    }
+}
+
 ?>
