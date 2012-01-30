@@ -2796,7 +2796,8 @@ elseif ($action == 'act_referral_add') {
     $id = isset($_REQUEST['id']) ? intval($_REQUEST['id']) : null;
     $email = $_POST['referral_email'];
 
-    $data = $db->getOne("SELECT COUNT(*) FROM " . $ecs->table('user_referral') . " WHERE user_id = '$user_id' AND is_active = 1");
+    $data = $db->getOne("SELECT COUNT(*) FROM " . $ecs->table('user_referral') . " WHERE registered_user_id IS NULL AND user_id = '$user_id' AND is_active = 1");
+
     if (!is_email($email))
     {
         show_message($_LANG['msg_email_format'], $_LANG['referral_add_fail'], 'user.php?act=referral&page=' . $page);
