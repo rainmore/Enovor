@@ -2797,6 +2797,7 @@ elseif ($action == 'act_referral_add') {
     $email = $_POST['referral_email'];
 
     $data = $db->getOne("SELECT COUNT(*) FROM " . $ecs->table('user_referral') . " WHERE registered_user_id IS NULL AND user_id = '$user_id' AND is_active = 1");
+    $isEmailRegistered = $db->getOne("SELECT COUNT(user_id) FROM " . $ecs->table('users') . " WHERE email = '" . mysql_real_escape_string($_POST['referral_email']) . "'");
 
     if (!is_email($email))
     {
@@ -2804,7 +2805,9 @@ elseif ($action == 'act_referral_add') {
     } elseif ($_CFG['shop_referral_closed'] || $id || $data)
 	{
 		show_message($_LANG['referral_add_fail'], $_LANG['referral_add_fail'], 'user.php?act=referral&page=' . $page);
-	} else {
+	} elseif ($isEmailRegistered) {
+        show_message($_LANG['referral_add_fail'], $_LANG['referral_add_email_existed'], 'user.php?act=referral&page=' . $page);
+    } else {
 		$db->query("INSERT INTO " . $ecs->table('user_referral') . " SET referral_email = '" . mysql_real_escape_string($_POST['referral_email']) . "', user_id = '" . $user_id . "', created_date = '" . time() . "'");
         $referral_id = mysql_insert_id();
         include_once(ROOT_PATH .'includes/lib_passport.php');
@@ -2826,7 +2829,6 @@ elseif ($action == 'act_referral_cancel') {
 	{
 		show_message($_LANG['exchange_error_1'], $_LANG['referral_delete_fail'], 'user.php?act=referral&page=' . $page);
 	} else {
-
 		$db->query("UPDATE " . $ecs->table('user_referral') . " SET is_active = 0 WHERE id = " . $id);
 		show_message($_LANG['referral_delete_success'], $_LANG['referral_delete_success'], 'user.php?act=referral&page=' . $page);
 	}
@@ -2840,8 +2842,8 @@ elseif ($action == 'act_referral_cancel') {
     include_once(ROOT_PATH . 'includes/lib_passport.php');
     $id = register_hash('decode', $hash);
     $sql = "SELECT referral_email, user_id, registered_date, registered_user_id FROM " . $ecs->table('user_referral') . " WHERE is_active = 1 AND id = '" . mysql_real_escape_string($id) . "'";
-    $referral = $db->getRow($sql);
 
+    $referral = $db->getRow($sql);
     if (!$hash || !$id || !$referral) {
          show_message($_LANG['referral_register_invalid_hash']);
     }
