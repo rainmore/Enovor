@@ -415,7 +415,6 @@ function send_referral_email($referral_id)
     $row = $GLOBALS['db']->getRow($sql);
 
     $email = $referral['referral_email'];
-    $referral_id = 1;
 
     $hash = register_hash('encode', $referral_id);
     $referral_comfirm_url = $GLOBALS['ecs']->url() . 'user.php?act=register_referral&hash=' . $hash;
